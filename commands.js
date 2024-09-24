@@ -1,37 +1,142 @@
-// JASKIS
-// paste the MongoDB commands you use underneath each prompt
-
 // GETTING STARTED
-// 1. Create a database called jaskis
 
+// Switch to the jaskis database (creates it if it doesn't exist)
+use jaskis
 
-// 2. Create a collection called bounties
+// Create the bounties collection
+db.createCollection('bounties')
 
+// Verify the collection creation
+show collections
 
 // ADD THE ANIMAL BOUNTIES
-// 1. Insert the given "Thanoceros" bounty object
 
+// Insert a single bounty
+db.bounties.insertOne({
+    name: "Polarwind",
+    species: "Polar Bear",
+    location: "Arctic",
+    wantedFor: "Eating too much salmon",
+    client: "Sabertooth",
+    reward: 10000,
+    captured: false
+})
 
-// 2. Query for all bounties in the bounties collection
+// Verify the insertion
+db.bounties.find()
 
-
-// 3. Insert many bounties at once using the given objects
+// Insert multiple bounties
+db.bounties.insertMany([
+    {
+        name: "Lokinkajou",
+        species: "Kinkajou",
+        location: "Tropical rainforest",
+        wantedFor: "Vandalism",
+        client: "Red wolf",
+        reward: 8000,
+        captured: false
+    },
+    {
+        name: "Thanoceros",
+        species: "Rhino",
+        location: "Grasslands",
+        wantedFor: "Eating all the grass",
+        client: "Black Panther",
+        reward: 15000,
+        captured: false
+    },
+    {
+        name: "Songbird",
+        species: "Bird",
+        location: "Mountain ranges",
+        wantedFor: "Disturbing the peace",
+        client: "Golden Eagle",
+        reward: 6000,
+        captured: false
+    },
+    {
+        name: "Redsky",
+        species: "Fox",
+        location: "Desert",
+        wantedFor: "Stealing eggs",
+        client: "Golden Eagle",
+        reward: 7000,
+        captured: true
+    }
+])
 
 // MANAGE THE DATABASE
-// Queries
-// 1. Query for all bounties in the Grasslands
 
-// 2. Query for all bounties with a reward worth 10000 or more
+// Query animals wanted in the Grasslands
+db.bounties.find({ location: "Grasslands" })
 
-// 3. Query for all bounties, but exclude the client attribute from being shown
+// Query animals with a reward of $10000 or more
+db.bounties.find({ reward: { $gte: 10000 } })
 
-// 4. Query for a Groundhog in the Woodlands
+// Query all animals excluding the client field
+db.bounties.find({}, { client: 0 })
 
-// Update and Delete
-// 1. Update the reward for Polarwind to 10000
+// Query for a Groundhog located in the Woodlands using $and
+db.bounties.find({
+    $and: [
+        { species: "Groundhog" },
+        { location: "Woodlands" }
+    ]
+})
 
-// 2. Remove Lokinkajou
+// UPDATE AND DELETE
 
-// 3. Delete all bounties sent by Songbird
+// Update the reward for Polarwind to $10000
+db.bounties.updateOne(
+    { name: "Polarwind" },
+    { $set: { reward: 10000 } }
+)
 
-// 4. Update all captured statuses to true
+// Remove Lokinkajou from the list
+db.bounties.deleteOne({ name: "Lokinkajou" })
+
+// Delete all bounties sent by Songbird
+db.bounties.deleteMany({ client: "Songbird" })
+
+// Update all captured statuses to true
+db.bounties.updateMany(
+    { captured: false },
+    { $set: { captured: true } }
+)
+
+// BONUS: THE SCAVENGERS
+
+// Create the scavengers collection
+db.createCollection('scavengers')
+
+// Insert scavenger data
+db.scavengers.insertMany([
+    {
+        name: "Tony Bark",
+        joined: new Date("2012-06-01"),
+        power: "Super hearing",
+        weapon: "Claws",
+        captured: [{ name: "Thanoceros", reward: 15000 }]
+    },
+    {
+        name: "Sabertooth",
+        joined: new Date("2010-05-13"),
+        power: "Invisibility",
+        weapon: "Fangs",
+        captured: [{ name: "Polarwind", reward: 10000 }]
+    }
+])
+
+// SCAVENGER QUERIES
+
+// Find all Scavengers who joined after December 31, 2011
+db.scavengers.find({ joined: { $gte: new Date("2011-12-31") } })
+
+// Find all Scavengers who helped catch Thanoceros
+db.scavengers.find({ "captured.name": "Thanoceros" })
+
+// Find all Scavengers who helped catch an animal with a reward greater than $11000
+db.scavengers.find({ "captured.reward": { $gt: 11000 } })
+
+// Find all Scavengers that don't have a weapon
+db.scavengers.find({ weapon: null })
